@@ -40,27 +40,30 @@ def get_video_metadata(youtube_service, video_ids):
     """Fetches detailed metadata for a list of video IDs."""
     video_response = youtube_service.videos().list(
         id=','.join(video_ids),
-        part='snippet,statistics,recordingDetails'
+        # Note: We already ask for 'snippet' which contains thumbnails, so no change is needed here.
+        part='snippet,statistics,recordingDetails,contentDetails'
     ).execute()
     
     video_details = []
     for video in video_response.get('items', []):
         snippet = video.get('snippet', {})
         stats = video.get('statistics', {})
+        # We don't need location anymore, but it's okay to leave these lines.
         recording_details = video.get('recordingDetails', {})
         location = recording_details.get('location', {})
+        content_details = video.get('contentDetails', {})
 
+        # This is the dictionary that defines our final table columns.
         details = {
             'Video ID': video.get('id'),
             'Title': snippet.get('title'),
-            'Published Date': snippet.get('publishedAt', '').split('T')[0], # Just the date
+            'Published Date': snippet.get('publishedAt', '').split('T')[0],
             'Channel Title': snippet.get('channelTitle'),
+            'Duration': content_details.get('duration'),
+            'Thumbnail URL': snippet.get('thumbnails', {}).get('default', {}).get('url'), # <-- ADDED
             'View Count': int(stats.get('viewCount', 0)),
-            'Like Count': int(stats.get('likeCount', 0)),
-            'Comment Count': int(stats.get('commentCount', 0)),
-            # Location is very rarely available
-            'Latitude': location.get('latitude'),
-            'Longitude': location.get('longitude')
+            'Like Count': int(stats.get('likeCount', 0))
+            # Comment Count, Latitude, and Longitude have been removed.
         }
         video_details.append(details)
         
