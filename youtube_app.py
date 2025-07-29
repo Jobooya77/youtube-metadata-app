@@ -221,4 +221,4 @@ if st.sidebar.button("Get Metadata"):
                     )
         except Exception as e:
             st.error(f"An error occurred. It could be an invalid API key, a private playlist, or a network issue.")
-            st.error(f"Error details: {e}")
+
